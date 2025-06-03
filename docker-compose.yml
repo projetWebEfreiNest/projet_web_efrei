@@ -4,6 +4,8 @@ services:
   ocr_service:
     build: ./ocr_service
     container_name: ocr_service
+    volumes:
+      - ./ocr_service:/app
     ports:
       - "3001:3000"
     depends_on:
@@ -12,6 +14,8 @@ services:
   text_treatment_service:
     build: ./text_treatment_service
     container_name: text_treatment_service
+    volumes:
+      - ./text_treatment_service:/app
     ports:
       - "3002:3000"
     depends_on:
@@ -20,6 +24,8 @@ services:
   public_api:
     build: ./public_api
     container_name: public_api
+    volumes:
+      - ./public_api:/app
     ports:
       - "3000:3000"
     depends_on:
