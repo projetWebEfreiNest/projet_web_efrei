@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { OcrModuleService } from './ocr_module.service';
 import { MessagePattern } from '@nestjs/microservices';
-import SUPPORTED_IMAGE_FORMATS from 'src/shared/consts/supported_images_formats';
+import SUPPORTED_FILES_FORMATS from 'src/shared/consts/supported_files_formats';
 
 @Controller()
 export class OcrModuleController {
@@ -16,19 +16,13 @@ export class OcrModuleController {
     }
 
     if (
-      !Object.values(SUPPORTED_IMAGE_FORMATS).includes(
-        fileFormat as SUPPORTED_IMAGE_FORMATS,
+      !Object.values(SUPPORTED_FILES_FORMATS).includes(
+        fileFormat as SUPPORTED_FILES_FORMATS,
       )
     ) {
       return { error: 'Unsupported file format' };
     }
 
-    let text: string;
-
-    if (fileFormat === SUPPORTED_IMAGE_FORMATS.PDF) {
-      text = await this.ocrModuleService.convertPdfToText(data.file);
-    } else {
-      text = await this.ocrModuleService.convertImageToText(data.file);
-    }
+    const result = await this.ocrModuleService.convertPdfToText(data.file);
   }
 }
