@@ -22,7 +22,7 @@ jobs:
 
       - name: Install deps
         working-directory: ./${{ matrix.service }}
-        run: npm ci
+        run: npm install
 
       - name: Run tests
         working-directory: ./${{ matrix.service }}
