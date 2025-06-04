@@ -7,8 +7,17 @@ async function bootstrap() {
     AppModule,
     {
       transport: Transport.RMQ,
-      // options blank for now
-      options: {},
+      options: {
+        urls: [
+          'amqps://zichyuad:hslzQgOdgVHN4UgbFZi9jpgiiJSW73GH@collie.lmq.cloudamqp.com/zichyuad',
+        ],
+        queue: 'ocr_queue',
+        queueOptions: {
+          durable: false,
+        },
+        exchange: 'broadcast_exchange',
+        exchangeType: 'fanout',
+      },
     },
   );
   await app.listen();
