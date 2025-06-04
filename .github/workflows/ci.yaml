@@ -30,25 +30,45 @@ jobs:
 
       - name: Deploy to Render
         env:
-          SERVICE: ${{ matrix.service }}
+          PUBLIC_API_STAGING: ${{ secrets.RENDER_PUBLIC_API_STAGING_HOOK }}
+          PUBLIC_API_PROD: ${{ secrets.RENDER_PUBLIC_API_PROD_HOOK }}
+          OCR_SERVICE_STAGING: ${{ secrets.RENDER_OCR_SERVICE_STAGING_HOOK }}
+          OCR_SERVICE_PROD: ${{ secrets.RENDER_OCR_SERVICE_PROD_HOOK }}
+          TEXT_TREATMENT_SERVICE_STAGING: ${{ secrets.RENDER_TEXT_TREATMENT_SERVICE_STAGING_HOOK }}
+          TEXT_TREATMENT_SERVICE_PROD: ${{ secrets.RENDER_TEXT_TREATMENT_SERVICE_PROD_HOOK }}
         run: |
           BRANCH="${{ github.ref_name }}"
-          SERVICE_UPPER=$(echo "$SERVICE" | tr '[:lower:]' '[:upper:]')
+          SERVICE="${{ matrix.service }}"
 
-          if [ "$BRANCH" = "dev" ]; then
-            SECRET_NAME="RENDER_${SERVICE_UPPER}_STAGING_HOOK"
-          elif [ "$BRANCH" = "main" ]; then
-            SECRET_NAME="RENDER_${SERVICE_UPPER}_PROD_HOOK"
+          echo "Déploiement de $SERVICE sur $BRANCH"
+
+          if [ "$SERVICE" = "public_api" ]; then
+            HOOK_STAGING="$PUBLIC_API_STAGING"
+            HOOK_PROD="$PUBLIC_API_PROD"
+          elif [ "$SERVICE" = "ocr_service" ]; then
+            HOOK_STAGING="$OCR_SERVICE_STAGING"
+            HOOK_PROD="$OCR_SERVICE_PROD"
+          elif [ "$SERVICE" = "text_treatment_service" ]; then
+            HOOK_STAGING="$TEXT_TREATMENT_SERVICE_STAGING"
+            HOOK_PROD="$TEXT_TREATMENT_SERVICE_PROD"
           else
-            echo "Pas de hook pour cette branche: $BRANCH"
-            exit 0
-          fi
-
-          HOOK_URL="${{ secrets[SECRET_NAME] }}"
-          if [ -z "$HOOK_URL" ]; then
-            echo "Le secret $SECRET_NAME est manquant."
+            echo "Service inconnu : $SERVICE"
             exit 1
           fi
 
-          echo "Déploiement de $SERVICE sur $BRANCH via $SECRET_NAME"
+          if [ "$BRANCH" = "dev" ]; then
+            HOOK_URL="$HOOK_STAGING"
+          elif [ "$BRANCH" = "main" ]; then
+            HOOK_URL="$HOOK_PROD"
+          else
+            echo "Branche non gérée : $BRANCH"
+            exit 0
+          fi
+
+          if [ -z "$HOOK_URL" ]; then
+            echo "Le hook est vide pour $SERVICE sur $BRANCH"
+            exit 1
+          fi
+
+          echo "Envoi du hook : $HOOK_URL"
           curl -X POST "$HOOK_URL"
