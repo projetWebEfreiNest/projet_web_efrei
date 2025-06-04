@@ -1,0 +1,54 @@
+name: CI/CD Microservices to Render
+
+on:
+  push:
+    branches: [dev, main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [public_api, ocr_service, text_treatment_service]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install deps
+        working-directory: ./${{ matrix.service }}
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./${{ matrix.service }}
+        run: npm run test -- --ci
+
+      - name: Deploy to Render
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          SERVICE_UPPER=$(echo "$SERVICE" | tr '[:lower:]' '[:upper:]')
+
+          if [ "$BRANCH" = "dev" ]; then
+            SECRET_NAME="RENDER_${SERVICE_UPPER}_STAGING_HOOK"
+          elif [ "$BRANCH" = "main" ]; then
+            SECRET_NAME="RENDER_${SERVICE_UPPER}_PROD_HOOK"
+          else
+            echo "Pas de hook pour cette branche: $BRANCH"
+            exit 0
+          fi
+
+          HOOK_URL="${{ secrets[SECRET_NAME] }}"
+          if [ -z "$HOOK_URL" ]; then
+            echo "Le secret $SECRET_NAME est manquant."
+            exit 1
+          fi
+
+          echo "Déploiement de $SERVICE sur $BRANCH via $SECRET_NAME"
+          curl -X POST "$HOOK_URL"
