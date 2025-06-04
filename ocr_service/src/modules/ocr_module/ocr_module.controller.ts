@@ -24,5 +24,15 @@ export class OcrModuleController {
     }
 
     const result = await this.ocrModuleService.convertPdfToText(data.file);
+
+    if (typeof result !== 'string') {
+      return { error: result };
+    }
+
+    return {
+      invoiceId: data.invoiceId,
+      text: result,
+      fileFormat: fileFormat as SUPPORTED_FILES_FORMATS,
+    };
   }
 }
