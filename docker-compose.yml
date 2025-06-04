@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   ocr_service:
     build: ./ocr_service
     container_name: ocr_service
@@ -39,7 +40,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "5433:5433"
     volumes:
       - db_data:/var/lib/postgresql/data
 
