@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { OcrModuleService } from './ocr_module.service';
 import { MessagePattern } from '@nestjs/microservices';
-import SUPPORTED_FILES_FORMATS from 'src/shared/consts/supported_files_formats';
+import { SUPPORTED_FILES_FORMATS } from '../../shared/consts/supported_files_formats';
 
 @Controller()
 export class OcrModuleController {

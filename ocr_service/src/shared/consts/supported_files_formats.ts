@@ -1,5 +1,3 @@
-enum SUPPORTED_FILES_FORMATS {
+export enum SUPPORTED_FILES_FORMATS {
   PDF = 'pdf',
 }
-
-export default SUPPORTED_FILES_FORMATS;
