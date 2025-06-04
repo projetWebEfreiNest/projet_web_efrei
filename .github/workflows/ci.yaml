@@ -26,9 +26,15 @@ jobs:
         working-directory: ./${{ matrix.service }}
         run: npm ci
 
-      - name: Run tests
+      - name: Run tests with coverage
         working-directory: ./${{ matrix.service }}
-        run: npm run test -- --ci
+        run: npm run test:cov
+
+      - name: Upload coverage to Codecov
+        working-directory: ./${{ matrix.service }}
+        run: |
+          bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
+
 
       - name: Deploy to Render
         env:
