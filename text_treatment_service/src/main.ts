@@ -1,16 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.RMQ,
     options: {
-      urls: ['amqp://user:password@rabbitmq:5672'],
-      queue: 'text_treatment_queue',
+      urls: [process.env.RMQ_URL],
+        queue: process.env.RMQ_TREATMENT_QUEUE,
       queueOptions: {
         durable: false
       },
+      // exchange: 'broadcast_exchange',
+      // exchangeType: 'fanout',
     },
   });
   await app.listen();
