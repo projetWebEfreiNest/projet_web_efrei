@@ -28,7 +28,7 @@ export class OcrModuleController {
     if (typeof result !== 'string') {
       return { error: result };
     }
-    //
+
     return {
       invoiceId: data.invoiceId,
       text: result,
