@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Module({
   imports: [
@@ -10,8 +13,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'OCR_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://user:password@rabbitmq:5672'],
-          queue: 'ocr_queue',
+          urls: [process.env.RMQ_OCR_URL],
+          queue: process.env.RMQ_OCR_QUEUE,
           queueOptions: { durable: false },
         },
       },
@@ -19,8 +22,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'TEXT_TREATMENT_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://user:password@rabbitmq:5672'],
-          queue: 'text_treatment_queue',
+          urls: [process.env.RMQ_TREATMENT_URL],
+          queue: process.env.RMQ_TREATMENT_QUEUE,
           queueOptions: { durable: false },
         },
       },
