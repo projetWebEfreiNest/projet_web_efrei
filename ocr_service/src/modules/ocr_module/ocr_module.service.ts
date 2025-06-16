@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { lookup as mimeLookup, extension as mimeExtension } from 'mime-types';
-import * as Tesseract from 'tesseract.js';
-import * as pdfParse from 'pdf-parse';
+import { getDocument } from 'pdfjs-dist';
 
 @Injectable()
 export class OcrModuleService {
@@ -26,13 +25,16 @@ export class OcrModuleService {
   }
 
   async convertPdfToText(fileBlob: Buffer): Promise<string> {
-    const data = await pdfParse(fileBlob);
-    return data.text;
-  }
+    const loadingTask = getDocument({ data: fileBlob });
+    const pdf = await loadingTask.promise;
 
-  async convertImageToText(fileBlob: Buffer): Promise<string> {
-    //TODO: multilanguage support
-    const { data } = await Tesseract.recognize(fileBlob, 'fr');
-    return data.text;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const strings = content.items.map((item) => (item as any).str);
+      fullText += strings.join(' ') + '\n';
+    }
+    return fullText;
   }
 }

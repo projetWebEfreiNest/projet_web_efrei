@@ -1,0 +1,82 @@
+name: CI/CD Microservices to Render
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [public_api, ocr_service, text_treatment_service]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install deps
+        working-directory: ./${{ matrix.service }}
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: ./${{ matrix.service }}
+        run: npm run test:cov
+
+      - name: Upload coverage to Codecov
+        working-directory: ./${{ matrix.service }}
+        run: |
+          bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
+
+
+      - name: Deploy to Render
+        env:
+          PUBLIC_API_STAGING: ${{ secrets.RENDER_PUBLIC_API_STAGING_HOOK }}
+          PUBLIC_API_PROD: ${{ secrets.RENDER_PUBLIC_API_PROD_HOOK }}
+          OCR_SERVICE_STAGING: ${{ secrets.RENDER_OCR_SERVICE_STAGING_HOOK }}
+          OCR_SERVICE_PROD: ${{ secrets.RENDER_OCR_SERVICE_PROD_HOOK }}
+          TEXT_TREATMENT_SERVICE_STAGING: ${{ secrets.RENDER_TEXT_TREATMENT_SERVICE_STAGING_HOOK }}
+          TEXT_TREATMENT_SERVICE_PROD: ${{ secrets.RENDER_TEXT_TREATMENT_SERVICE_PROD_HOOK }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          SERVICE="${{ matrix.service }}"
+
+          echo "Déploiement de $SERVICE sur $BRANCH"
+
+          if [ "$SERVICE" = "public_api" ]; then
+            HOOK_STAGING="$PUBLIC_API_STAGING"
+            HOOK_PROD="$PUBLIC_API_PROD"
+          elif [ "$SERVICE" = "ocr_service" ]; then
+            HOOK_STAGING="$OCR_SERVICE_STAGING"
+            HOOK_PROD="$OCR_SERVICE_PROD"
+          elif [ "$SERVICE" = "text_treatment_service" ]; then
+            HOOK_STAGING="$TEXT_TREATMENT_SERVICE_STAGING"
+            HOOK_PROD="$TEXT_TREATMENT_SERVICE_PROD"
+          else
+            echo "Service inconnu : $SERVICE"
+            exit 1
+          fi
+
+          if [ "$BRANCH" = "dev" ]; then
+            HOOK_URL="$HOOK_STAGING"
+          elif [ "$BRANCH" = "main" ]; then
+            HOOK_URL="$HOOK_PROD"
+          else
+            echo "Branche non gérée : $BRANCH"
+            exit 0
+          fi
+
+          if [ -z "$HOOK_URL" ]; then
+            echo "Le hook est vide pour $SERVICE sur $BRANCH"
+            exit 1
+          fi
+
+          echo "Envoi du hook : $HOOK_URL"
+          curl -X POST "$HOOK_URL"
