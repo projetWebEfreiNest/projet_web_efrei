@@ -12,19 +12,6 @@ describe('User Entity', () => {
     expect(user.name).toBe('John Doe');
     expect(user.email).toBe('john@example.com');
   });
-
-  it('should have the correct properties', () => {
-    const user = new User();
-    
-    // Verify that the class can have the expected properties assigned
-    user.id = 1;
-    user.name = 'Test';
-    user.email = 'test@example.com';
-    
-    expect(user.id).toBeDefined();
-    expect(user.name).toBeDefined();
-    expect(user.email).toBeDefined();
-  });
 });
 
 describe('AuthResponse Entity', () => {
@@ -34,14 +21,5 @@ describe('AuthResponse Entity', () => {
 
     expect(authResponse).toBeInstanceOf(AuthResponse);
     expect(authResponse.access_token).toBe('mockToken123');
-  });
-
-  it('should have the correct properties', () => {
-    const authResponse = new AuthResponse();
-    
-    // Verify that the class can have the expected properties assigned
-    authResponse.access_token = 'test-token';
-    
-    expect(authResponse.access_token).toBeDefined();
   });
 });
