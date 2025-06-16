@@ -4,6 +4,13 @@ import { AppService } from './app.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import * as dotenv from 'dotenv';
 
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+
+import { HelloResolver } from './hello.resolver';
+import { AuthModule } from './auth/auth.module';
+import { PrismaModule } from './prisma.module';
+
 dotenv.config();
 
 @Module({
@@ -28,8 +35,16 @@ dotenv.config();
         },
       },
     ]),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      playground: true,
+      path: '/graphql',
+    }),
+    AuthModule,
+    PrismaModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, HelloResolver],
 })
 export class AppModule {}
