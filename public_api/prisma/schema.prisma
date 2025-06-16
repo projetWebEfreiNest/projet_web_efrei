@@ -37,8 +37,8 @@ model Invoice {
   date        DateTime
   type        InvoiceType
 
-  invoiceData InvoiceData[] // 1-n
-  invoiceTags InvoiceTag[]  // Table de jointure pour n-n
+  invoiceData InvoiceData[] 
+  invoiceTags InvoiceTag[]
 
   user        User          @relation(fields: [userId], references: [id])
   userId      Int

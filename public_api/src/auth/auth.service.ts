@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateAuthInput } from './dto/create-auth.input';
 import { UpdateAuthInput } from './dto/update-auth.input';
@@ -8,42 +13,53 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AuthService {
   constructor(
-      private readonly prisma: PrismaService,
-      private jwtService: JwtService
-) {}
+    private readonly prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   async create(createAuthInput: CreateAuthInput) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: createAuthInput.email },
+    });
+    if (existing) {
+      throw new ConflictException('Cet email est déjà utilisé');
+    }
+
     const hashedPassword = await bcrypt.hash(createAuthInput.password, 10);
-    return this.prisma.user.create({
+    const createdUser = await this.prisma.user.create({
       data: {
         ...createAuthInput,
         password: hashedPassword,
       },
     });
+
+    const payload = { sub: createdUser.id, email: createdUser.email };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 
-  findAll() {
-    console.log('Fetching all users');
+  async findAll() {
     return this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.user.findUnique({
-      where: { id },
-    });
+  async findOne(id: number) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException(`Utilisateur ${id} introuvable`);
+    return user;
   }
 
-  update(id: number, updateAuthInput: UpdateAuthInput) {
+  async update(id: number, updateAuthInput: UpdateAuthInput) {
+    await this.findOne(id);
     return this.prisma.user.update({
       where: { id },
       data: updateAuthInput,
     });
   }
 
-  remove(id: number) {
-    return this.prisma.user.delete({
-      where: { id },
-    });
+  async remove(id: number) {
+    await this.findOne(id);
+    return this.prisma.user.delete({ where: { id } });
   }
 
   async validateUser(email: string, password: string) {
@@ -51,18 +67,16 @@ export class AuthService {
     if (!user) return null;
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) return null;
-
     const { password: _, ...result } = user;
-    console.log('User validated:', result);
     return result;
   }
 
   async login(email: string, password: string) {
-    console.log('Attempting to log in user:', email);
     const user = await this.validateUser(email, password);
-    if (!user) throw new UnauthorizedException('Email ou mot de passe invalide');
+    if (!user) {
+      throw new UnauthorizedException('Email ou mot de passe invalide');
+    }
     const payload = { sub: user.id, email: user.email };
-    console.log('User logged in:', user);
     return {
       access_token: this.jwtService.sign(payload),
       user,
@@ -70,9 +84,6 @@ export class AuthService {
   }
 
   async deleteUser(id: number) {
-    return this.prisma.user.delete({
-      where: { id },
-    });
+    return this.remove(id);
   }
-
 }

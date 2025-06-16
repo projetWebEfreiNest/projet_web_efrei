@@ -10,6 +10,10 @@ export class User {
 
   @Field()
   email: string;
+}
 
-  // PAS de champ password ici, sauf si tu veux l’exposer (déconseillé)
+@ObjectType()
+export class AuthResponse {
+  @Field()
+  access_token: string;
 }
