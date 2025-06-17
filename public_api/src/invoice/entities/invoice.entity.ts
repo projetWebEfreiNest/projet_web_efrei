@@ -1,5 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { InvoiceType, InvoiceStatus } from '@prisma/client';
+import { Tag } from '../../tag/entities/tag.entity';
 
 @ObjectType()
 export class InvoiceData {
@@ -44,4 +45,7 @@ export class Invoice {
 
   @Field(() => [InvoiceData], { nullable: true })
   invoiceData?: InvoiceData[];
+
+  @Field(() => [Tag], { nullable: true })
+  tags?: Tag[];
 }

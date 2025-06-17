@@ -33,9 +33,10 @@ export class InvoiceResolver {
     @Context() context: any,
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Int, defaultValue: 10 }) limit: number,
+    @Args('tagIds', { type: () => [Int], nullable: true }) tagIds?: number[],
   ) {
     const userId = context.req.user.userId;
-    return this.invoiceService.findAll(userId, page, limit);
+    return this.invoiceService.findAll(userId, page, limit, tagIds);
   }
 
   @Query(() => Invoice, { name: 'invoice' })
@@ -75,9 +76,13 @@ export class InvoiceResolver {
 
   @Query(() => [Invoice], { name: 'invoicesByStatus' })
   @UseGuards(JwtAuthGuard)
-  async findByStatus(@Args('status') status: string, @Context() context: any) {
+  async findByStatus(
+    @Args('status') status: string,
+    @Context() context: any,
+    @Args('tagIds', { type: () => [Int], nullable: true }) tagIds?: number[],
+  ) {
     const userId = context.req.user.userId;
-    return this.invoiceService.findByStatus(userId, status);
+    return this.invoiceService.findByStatus(userId, status, tagIds);
   }
 
   @Query(() => ProcessingStatusResponse, { name: 'processingStatus' })

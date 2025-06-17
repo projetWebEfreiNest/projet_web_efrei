@@ -75,23 +75,43 @@ export class InvoiceService {
     userId: number,
     page: number = 1,
     limit: number = 10,
+    tagIds?: number[],
   ): Promise<PaginatedInvoiceResponse> {
     const skip = (page - 1) * limit;
 
+    // Construire la condition where
+    const whereCondition: any = { userId };
+
+    // Si des tags sont spécifiés, filtrer par ces tags
+    if (tagIds && tagIds.length > 0) {
+      whereCondition.invoiceTags = {
+        some: {
+          tagId: {
+            in: tagIds,
+          },
+        },
+      };
+    }
+
     const [invoices, total] = await Promise.all([
       this.prisma.invoice.findMany({
-        where: { userId },
+        where: whereCondition,
         skip,
         take: limit,
         include: {
           invoiceData: true,
+          invoiceTags: {
+            include: {
+              tag: true,
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
         },
       }),
       this.prisma.invoice.count({
-        where: { userId },
+        where: whereCondition,
       }),
     ]);
 
@@ -229,14 +249,32 @@ export class InvoiceService {
     console.log(`Updated invoice ${invoiceId} status to ${status}`);
   }
 
-  async findByStatus(userId: number, status: string) {
+  async findByStatus(userId: number, status: string, tagIds?: number[]) {
+    const whereCondition: any = {
+      userId,
+      status: status as any,
+    };
+
+    // Si des tags sont spécifiés, filtrer par ces tags
+    if (tagIds && tagIds.length > 0) {
+      whereCondition.invoiceTags = {
+        some: {
+          tagId: {
+            in: tagIds,
+          },
+        },
+      };
+    }
+
     return this.prisma.invoice.findMany({
-      where: {
-        userId,
-        status: status as any,
-      },
+      where: whereCondition,
       include: {
         invoiceData: true,
+        invoiceTags: {
+          include: {
+            tag: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

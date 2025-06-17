@@ -40,16 +40,45 @@ export class InvoiceController {
 
   @Get()
   async findAll(
+    @Request() req: any,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Request() req: any,
+    @Query('tagIds') tagIds?: string,
   ) {
-    return this.invoiceService.findAll(req.user.userId, page, limit);
+    // Parser les tagIds si fournis (format: "1,2,3")
+    const parsedTagIds = tagIds
+      ? tagIds
+          .split(',')
+          .map((id) => parseInt(id.trim()))
+          .filter((id) => !isNaN(id))
+      : undefined;
+
+    return this.invoiceService.findAll(
+      req.user.userId,
+      page,
+      limit,
+      parsedTagIds,
+    );
   }
 
   @Get('status/:status')
-  async findByStatus(@Param('status') status: string, @Request() req: any) {
-    return this.invoiceService.findByStatus(req.user.userId, status);
+  async findByStatus(
+    @Param('status') status: string,
+    @Request() req: any,
+    @Query('tagIds') tagIds?: string,
+  ) {
+    const parsedTagIds = tagIds
+      ? tagIds
+          .split(',')
+          .map((id) => parseInt(id.trim()))
+          .filter((id) => !isNaN(id))
+      : undefined;
+
+    return this.invoiceService.findByStatus(
+      req.user.userId,
+      status,
+      parsedTagIds,
+    );
   }
 
   @Get('processing/count')
