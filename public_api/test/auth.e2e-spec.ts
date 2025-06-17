@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AuthModule } from './auth.module';
-import { PrismaService } from './../prisma.service';
+import { AuthModule } from '../src/auth/auth.module';
+import { PrismaService } from '../src/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
