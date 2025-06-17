@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+
+  tags      Tag[]
+  invoices  Invoice[]
+}
+
+model Tag {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String
+  colors      String
+  createdAt   DateTime    @default(now())
+  user        User        @relation(fields: [userId], references: [id])
+  userId      Int
+
+  invoiceTags InvoiceTag[]   // Table de jointure pour n-n
+}
+
+model Invoice {
+  id          Int           @id @default(autoincrement())
+  name        String
+  filePath    String?
+  createdAt   DateTime      @default(now())
+  date        DateTime
+  type        InvoiceType
+
+  invoiceData InvoiceData[] 
+  invoiceTags InvoiceTag[]
+
+  user        User          @relation(fields: [userId], references: [id])
+  userId      Int
+}
+
+model InvoiceData {
+  id         Int       @id @default(autoincrement())
+  content    String
+  amount     Float
+
+  invoice    Invoice   @relation(fields: [invoiceId], references: [id])
+  invoiceId  Int
+}
+
+model InvoiceTag {
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId Int
+  tag       Tag      @relation(fields: [tagId], references: [id])
+  tagId     Int
+
+  @@id([invoiceId, tagId])
+}
+
+enum InvoiceType {
+  EMIS
+  RECUS
+}

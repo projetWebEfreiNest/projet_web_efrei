@@ -20,6 +20,8 @@ async function bootstrap() {
         exchange: 'broadcast_exchange',
         exchangeType: 'fanout',
       },
+      // exchange: 'broadcast_exchange',
+      // exchangeType: 'fanout',
     },
   );
   await app.listen();
