@@ -11,17 +11,12 @@ async function bootstrap() {
     {
       transport: Transport.RMQ,
       options: {
-        urls: [process.env.RMQ_URL],
-        queue: process.env.RMQ_OCR_QUEUE,
+        urls: [process.env.RMQ_URL || 'amqp://root:root@rabbitmq:5672'],
+        queue: 'text_treatment_queue',
         queueOptions: {
           durable: false,
         },
-
-        exchange: 'broadcast_exchange',
-        exchangeType: 'fanout',
       },
-      // exchange: 'broadcast_exchange',
-      // exchangeType: 'fanout',
     },
   );
   await app.listen();

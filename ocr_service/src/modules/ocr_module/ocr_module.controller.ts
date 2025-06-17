@@ -8,8 +8,10 @@ export class OcrModuleController {
   constructor(private readonly ocrModuleService: OcrModuleService) {}
 
   @MessagePattern('convert_invoice_to_text')
-  async convertInvoiceToText(data: { file: Buffer; invoiceId: string }) {
-    const fileFormat = await this.ocrModuleService.getFileFormat(data.file);
+  async convertInvoiceToText(data: any) {
+    const fileBlob = Buffer.from(data.content, 'base64');
+
+    const fileFormat = await this.ocrModuleService.getFileFormat(fileBlob);
 
     if (fileFormat instanceof Error) {
       return { error: fileFormat.message };
@@ -23,15 +25,15 @@ export class OcrModuleController {
       return { error: 'Unsupported file format' };
     }
 
-    const result = await this.ocrModuleService.convertPdfToText(data.file);
+    const extractedText =
+      await this.ocrModuleService.convertPdfToText(fileBlob);
 
-    if (typeof result !== 'string') {
-      return { error: result };
+    if (typeof extractedText !== 'string') {
+      return { error: extractedText };
     }
-    //
+
     return {
-      invoiceId: data.invoiceId,
-      text: result,
+      content: extractedText,
       fileFormat: fileFormat as SUPPORTED_FILES_FORMATS,
     };
   }

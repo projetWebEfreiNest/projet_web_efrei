@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import OpenAI from 'openai';
 
 @Injectable()
@@ -7,6 +8,10 @@ export class TextTreatmentService {
     baseURL: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY!,
   });
+
+  constructor(
+    @Inject('PUBLIC_API_SERVICE') private publicApiClient: ClientProxy,
+  ) {}
 
   async analyze(
     invoiceId: string,
@@ -58,11 +63,30 @@ export class TextTreatmentService {
       const raw = completion.choices[0].message.content;
       const parsed = JSON.parse(raw);
 
+      // Envoyer les données vers public_api
+      this.publicApiClient.emit('invoice_data', {
+        invoice_id: parseInt(invoiceId),
+        content: parsed.content,
+        amount: parsed.amount,
+      });
+
+      console.log(`Sent invoice data for invoice ${invoiceId} to public_api`);
+
       return {
         invoice_id: invoiceId,
         result: parsed,
       };
-    } catch {
+    } catch (error) {
+      console.error('Error analyzing invoice:', error);
+
+      // Envoyer un résultat par défaut vers public_api
+      this.publicApiClient.emit('invoice_data', {
+        invoice_id: parseInt(invoiceId),
+        content:
+          'Le texte fourni ne contient pas de détails pour générer un résumé structuré de la facture.',
+        amount: 0,
+      });
+
       return {
         invoice_id: invoiceId,
         result: {

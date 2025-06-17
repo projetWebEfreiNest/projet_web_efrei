@@ -10,6 +10,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { HelloResolver } from './hello.resolver';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma.module';
+import { InvoiceModule } from './invoice/invoice.module';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ dotenv.config();
     }),
     AuthModule,
     PrismaModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [AppService, HelloResolver],
