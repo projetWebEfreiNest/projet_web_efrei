@@ -29,6 +29,25 @@ export class InvoiceService {
 
     const filePath = await this.s3Service.uploadFile(file, userId);
 
+    // Parser les tagIds si elles viennent comme chaîne de caractères
+    let parsedTagIds: number[] | undefined;
+    if (createInvoiceInput.tagIds) {
+      if (Array.isArray(createInvoiceInput.tagIds)) {
+        parsedTagIds = createInvoiceInput.tagIds;
+      } else if (typeof createInvoiceInput.tagIds === 'string') {
+        // Si c'est une chaîne, la parser (format: "1,2,3" ou JSON)
+        try {
+          parsedTagIds = JSON.parse(createInvoiceInput.tagIds);
+        } catch {
+          // Si ce n'est pas du JSON, essayer split par virgule
+          parsedTagIds = createInvoiceInput.tagIds
+            .split(',')
+            .map((id) => parseInt(id.trim()))
+            .filter((id) => !isNaN(id));
+        }
+      }
+    }
+
     const invoice = await this.prisma.invoice.create({
       data: {
         name: createInvoiceInput.name,
@@ -37,13 +56,14 @@ export class InvoiceService {
         filePath,
         userId,
         status: 'UPLOADED', // Statut initial
-        invoiceTags: createInvoiceInput.tagIds
-          ? {
-              create: createInvoiceInput.tagIds.map((tagId) => ({
-                tagId,
-              })),
-            }
-          : undefined,
+        invoiceTags:
+          parsedTagIds && parsedTagIds.length > 0
+            ? {
+                create: parsedTagIds.map((tagId) => ({
+                  tagId,
+                })),
+              }
+            : undefined,
       },
       include: {
         invoiceData: true,
@@ -185,16 +205,33 @@ export class InvoiceService {
     });
 
     if (updateInvoiceInput.tagIds) {
-      await this.prisma.invoiceTag.deleteMany({
-        where: { invoiceId: id },
-      });
+      // Parser les tagIds si elles viennent comme chaîne de caractères
+      let parsedTagIds: number[] | undefined;
+      if (Array.isArray(updateInvoiceInput.tagIds)) {
+        parsedTagIds = updateInvoiceInput.tagIds;
+      } else if (typeof updateInvoiceInput.tagIds === 'string') {
+        try {
+          parsedTagIds = JSON.parse(updateInvoiceInput.tagIds);
+        } catch {
+          parsedTagIds = updateInvoiceInput.tagIds
+            .split(',')
+            .map((id) => parseInt(id.trim()))
+            .filter((id) => !isNaN(id));
+        }
+      }
 
-      await this.prisma.invoiceTag.createMany({
-        data: updateInvoiceInput.tagIds.map((tagId) => ({
-          invoiceId: id,
-          tagId,
-        })),
-      });
+      if (parsedTagIds && parsedTagIds.length > 0) {
+        await this.prisma.invoiceTag.deleteMany({
+          where: { invoiceId: id },
+        });
+
+        await this.prisma.invoiceTag.createMany({
+          data: parsedTagIds.map((tagId) => ({
+            invoiceId: id,
+            tagId,
+          })),
+        });
+      }
     }
 
     return this.findOne(id, userId);
@@ -203,10 +240,22 @@ export class InvoiceService {
   async remove(id: number, userId: number) {
     const invoice = await this.findOne(id, userId);
 
+    // Supprimer d'abord les données de facture associées
+    await this.prisma.invoiceData.deleteMany({
+      where: { invoiceId: id },
+    });
+
+    // Supprimer les relations avec les tags
+    await this.prisma.invoiceTag.deleteMany({
+      where: { invoiceId: id },
+    });
+
+    // Supprimer le fichier S3 s'il existe
     if (invoice.filePath) {
       await this.s3Service.deleteFile(invoice.filePath);
     }
 
+    // Enfin, supprimer la facture
     await this.prisma.invoice.delete({
       where: { id },
     });

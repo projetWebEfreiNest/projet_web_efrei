@@ -18,6 +18,5 @@ export class CreateInvoiceInput {
 
   @Field(() => [Int], { nullable: true })
   @IsOptional()
-  @IsArray()
-  tagIds?: number[];
+  tagIds?: number[] | string; // Peut être un tableau ou une chaîne (pour multipart)
 }
