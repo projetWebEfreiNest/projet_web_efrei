@@ -8,10 +8,16 @@ describe('TextTreatmentService', () => {
   let service: TextTreatmentService;
   let mockCreate: jest.Mock;
   let mockEmit: jest.Mock;
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     mockCreate = jest.fn();
     mockEmit = jest.fn();
+
+    // Mock console methods to prevent CI issues
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     (OpenAI as unknown as jest.Mock).mockImplementation(() => ({
       chat: {
@@ -34,6 +40,13 @@ describe('TextTreatmentService', () => {
     }).compile();
 
     service = module.get(TextTreatmentService);
+  });
+
+  afterEach(() => {
+    // Restore console methods
+    consoleLogSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    jest.clearAllMocks();
   });
 
   it('devrait être défini', () => {
