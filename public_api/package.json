@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "npx prisma generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch --legacy-watch",
@@ -19,7 +19,8 @@
     "test:report": "npm run test:cov && npx codecov",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "start:docker": "npx prisma generate && npm run start:dev"
+    "start:docker": "node dist/main",
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",
