@@ -19,7 +19,7 @@
     "test:report": "npm run test:cov && npx codecov",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "start:docker": "npm run start:dev"
+    "start:docker": "npx prisma generate && npm run start:dev"
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",
