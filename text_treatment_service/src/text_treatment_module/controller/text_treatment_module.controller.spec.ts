@@ -8,9 +8,12 @@ jest.mock('openai');
 describe('TextTreatmentController', () => {
   let controller: TextTreatmentController;
   let mockCreate: jest.Mock;
+  let mockEmit: jest.Mock;
 
   beforeEach(async () => {
     mockCreate = jest.fn();
+    mockEmit = jest.fn();
+
     (OpenAI as unknown as jest.Mock).mockImplementation(() => ({
       chat: {
         completions: {
@@ -21,7 +24,15 @@ describe('TextTreatmentController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TextTreatmentController],
-      providers: [TextTreatmentService],
+      providers: [
+        TextTreatmentService,
+        {
+          provide: 'PUBLIC_API_SERVICE',
+          useValue: {
+            emit: mockEmit,
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get(TextTreatmentController);
@@ -42,24 +53,24 @@ describe('TextTreatmentController', () => {
       ],
     });
 
-    const res = await controller.analyzeText({
-      invoice_id: 'I-1',
+    const res = await controller.analyzeInvoice({
+      invoice_id: 3,
       content: 'texte pour intégration',
     });
     expect(res).toEqual({
-      invoice_id: 'I-1',
+      invoice_id: '3',
       result: { content: 'INT OK', amount: 42 },
     });
   });
 
   it('retourne le fallback via le controller (échec OpenAI)', async () => {
     mockCreate.mockRejectedValueOnce(new Error('fail'));
-    const res = await controller.analyzeText({
-      invoice_id: 'I-2',
+    const res = await controller.analyzeInvoice({
+      invoice_id: 3,
       content: 'test erreur',
     });
     expect(res).toEqual({
-      invoice_id: 'I-2',
+      invoice_id: '3',
       result: {
         content:
           'Le texte fourni ne contient pas de détails pour générer un résumé structuré de la facture.',
