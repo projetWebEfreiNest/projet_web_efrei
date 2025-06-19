@@ -22,7 +22,6 @@
     "test:report": "npm run test:cov && npx codecov",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "start:docker": "node dist/main",
     "postinstall": "npx prisma generate --schema=prisma/schema.prisma",
     "deploy": "npx prisma migrate deploy --schema=prisma/schema.prisma && npx prisma generate --schema=prisma/schema.prisma && npm run build",
     "start:production": "npx prisma migrate deploy --schema=prisma/schema.prisma && npx prisma generate --schema=prisma/schema.prisma && npm run start:prod"

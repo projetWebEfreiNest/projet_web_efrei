@@ -1,7 +1,24 @@
-FROM node:18
+FROM node:20-slim
 WORKDIR /app
+
+# Installer les dépendances système nécessaires pour Prisma
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+# Copier les fichiers de dépendances
 COPY package*.json ./
-RUN npm install
+
+# Installer toutes les dépendances (dev + prod) pour le build
+RUN npm ci
+
+# Copier le code source et le schéma Prisma
 COPY . .
+
+# Générer le client Prisma et compiler l'application
+RUN npx prisma generate && npm run build
+
+# Supprimer les devDependencies après le build
+RUN npm prune --production
+
 EXPOSE 3000
-CMD ["npm", "run", "start:docker"]
+
+CMD ["npm", "run", "start:prod"]
