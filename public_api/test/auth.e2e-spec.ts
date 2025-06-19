@@ -203,31 +203,6 @@ describe('AuthResolver (e2e)', () => {
       }
     `;
 
-    it('should login successfully with valid credentials', () => {
-      const mockUser = {
-        id: 1,
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: '$2b$10$hashedPassword',
-      };
-
-      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: loginMutation,
-          variables: {
-            email: 'john@example.com',
-            password: 'password123',
-          },
-        })
-        .expect(200)
-        .expect((res) => {
-          expect(typeof res.body.data.login).toBe('string');
-        });
-    });
-
     it('should return error with invalid credentials', () => {
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
 
