@@ -1,6 +1,9 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { InvoiceType, InvoiceStatus } from '@prisma/client';
 import { Tag } from '../../tag/entities/tag.entity';
+
+// Types pour GraphQL
+type InvoiceType = 'EMIS' | 'RECUS';
+type InvoiceStatus = 'UPLOADED' | 'PROCESSING' | 'COMPLETED' | 'ERROR';
 
 @ObjectType()
 export class InvoiceData {

@@ -3,7 +3,12 @@ import { InvoiceController } from './invoice.controller';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 import { UpdateInvoiceInput } from './dto/update-invoice.input';
-import { InvoiceType } from '@prisma/client';
+
+// Types pour les tests
+enum InvoiceType {
+  EMIS = 'EMIS',
+  RECUS = 'RECUS',
+}
 
 describe('InvoiceController', () => {
   let controller: InvoiceController;

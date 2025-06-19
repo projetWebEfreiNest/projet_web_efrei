@@ -1,6 +1,11 @@
 import { InputType, Field, Int } from '@nestjs/graphql';
-import { InvoiceType } from '@prisma/client';
 import { IsEnum, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+
+// Types pour les invoices
+enum InvoiceType {
+  EMIS = 'EMIS',
+  RECUS = 'RECUS',
+}
 
 @InputType()
 export class CreateInvoiceInput {
