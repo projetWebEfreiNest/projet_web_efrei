@@ -36,6 +36,7 @@ model Invoice {
   createdAt   DateTime      @default(now())
   date        DateTime
   type        InvoiceType
+  status      InvoiceStatus @default(UPLOADED)
 
   invoiceData InvoiceData[] 
   invoiceTags InvoiceTag[]
@@ -65,4 +66,11 @@ model InvoiceTag {
 enum InvoiceType {
   EMIS
   RECUS
+}
+
+enum InvoiceStatus {
+  UPLOADED    // Fichier uploadé, en attente de traitement
+  PROCESSING  // En cours de traitement (OCR + LLM)
+  COMPLETED   // Traitement terminé avec succès
+  ERROR       // Erreur dans le traitement
 }
