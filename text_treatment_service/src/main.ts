@@ -20,6 +20,9 @@ async function bootstrap() {
     },
   );
   await app.listen();
+
+  const fakeApp = await NestFactory.create(AppModule);
+  await fakeApp.listen(process.env.PORT || 3001);
 }
 
 bootstrap();
