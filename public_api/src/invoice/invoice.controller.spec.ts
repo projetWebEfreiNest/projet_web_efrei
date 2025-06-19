@@ -3,10 +3,7 @@ import { InvoiceController } from './invoice.controller';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 import { UpdateInvoiceInput } from './dto/update-invoice.input';
-enum InvoiceType {
-  EMIS = 'EMIS',
-  RECUS = 'RECU',
-}
+import { InvoiceType } from '@prisma/client';
 
 describe('InvoiceController', () => {
   let controller: InvoiceController;
@@ -111,12 +108,7 @@ describe('InvoiceController', () => {
 
       const result = await controller.findAll(mockRequest);
 
-      expect(mockInvoiceService.findAll).toHaveBeenCalledWith(
-        1,
-        1,
-        10,
-        undefined,
-      );
+      expect(mockInvoiceService.findAll).toHaveBeenCalledWith(1);
       expect(result).toEqual(expectedInvoices);
     });
   });

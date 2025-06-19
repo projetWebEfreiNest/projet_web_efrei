@@ -6,11 +6,7 @@ import { RabbitMQService } from './rabbitmq.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 import { UpdateInvoiceInput } from './dto/update-invoice.input';
-
-enum InvoiceType {
-  EMIS = 'EMIS',
-  RECUS = 'RECUS',
-}
+import { InvoiceType } from '@prisma/client';
 
 describe('InvoiceService', () => {
   let service: InvoiceService;
@@ -96,7 +92,6 @@ describe('InvoiceService', () => {
     const createInvoiceInput: CreateInvoiceInput = {
       name: 'Test Invoice',
       date: new Date(),
-      //@ts-ignore
       type: InvoiceType.EMIS,
       tagIds: [1, 2],
     };
@@ -324,7 +319,6 @@ describe('InvoiceService', () => {
       id: 1,
       name: 'Updated Invoice',
       date: new Date(),
-      //@ts-ignore
       type: InvoiceType.RECUS,
     };
 

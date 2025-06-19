@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "InvoiceType" AS ENUM ('EMIS', 'RECUS');
 
+-- CreateEnum
+CREATE TYPE "InvoiceStatus" AS ENUM ('UPLOADED', 'PROCESSING', 'COMPLETED', 'ERROR');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -31,6 +34,7 @@ CREATE TABLE "Invoice" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "date" TIMESTAMP(3) NOT NULL,
     "type" "InvoiceType" NOT NULL,
+    "status" "InvoiceStatus" NOT NULL DEFAULT 'UPLOADED',
     "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Invoice_pkey" PRIMARY KEY ("id")
